@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- Responsive viewport for all devices (iPhone, Android, Windows Phone, etc.) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+
+  <!-- Mobile optimization meta tags for all devices -->
+  <meta name="MobileOptimized" content="width" />
+  <meta name="HandheldFriendly" content="true" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="WorkForce Intel" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <!-- Windows Phone specific -->
+  <meta name="msapplication-tap-highlight" content="no" />
+  <meta name="viewport"
+    content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+
+  <!-- Theme color for mobile browsers -->
+  <meta name="theme-color" content="#4f46e5" />
+  <meta name="msapplication-TileColor" content="#4f46e5" />
+
+  <!-- TODO: Set the document title to the name of your application -->
+  <title>WorkForce Intel</title>
+  <meta name="description" content="WorkForce Intel - Device-friendly workforce management application" />
+
+  <!-- Load Bootstrap CSS directly to prevent blank page on load -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+
+  <!-- Preconnect to external domains for faster connection setup -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" />
+
+  <!-- Load fonts with display=swap for better performance -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Load Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <meta name="author" content="Lovable" />
+
+  <!-- TODO: Update og:title to match your application name -->
+  <meta property="og:title" content="WorkForce Intel" />
+  <meta property="og:description" content="WorkForce Intel - Device-friendly workforce management application" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@Lovable" />
+  <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/favicon.ico" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

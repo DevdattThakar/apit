@@ -1,0 +1,96 @@
+﻿[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+node.exe : Browserslist: 
+browsers data (caniuse-lite) 
+is 9 months old. Please run:
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" "C:\Us
+ers\HP\AppData\Roaming\npm 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Browser  
+  slist: b...ld. Please ru   
+ n::String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+  npx 
+update-browserslist-db@latest
+  Why you should do it 
+regularly: https://github.com
+/browserslist/update-db#readm
+e
+[32mΓ£ô[39m 1658 modules transformed.
+[31mΓ£ù[39m Build failed 
+in 6.59s
+[31merror during build:
+[31m[vite:define] Transform 
+failed with 25 errors:
+C:/Users/HP/Desktop/apit-main
+/src/lib/supabaseData.js:984:
+4: ERROR: Multiple exports 
+with the same name 
+"supabaseLogin"
+C:/Users/HP/Desktop/apit-main
+/src/lib/supabaseData.js:985:
+4: ERROR: Multiple exports 
+with the same name 
+"supabaseLogout"
+C:/Users/HP/Desktop/apit-main
+/src/lib/supabaseData.js:986:
+4: ERROR: Multiple exports 
+with the same name 
+"getSession"
+C:/Users/HP/Desktop/apit-main
+/src/lib/supabaseData.js:987:
+4: ERROR: Multiple exports 
+with the same name 
+"fetchEmployees"
+C:/Users/HP/Desktop/apit-main
+/src/lib/supabaseData.js:988:
+4: ERROR: Multiple exports 
+with the same name 
+"fetchProjects"
+...[31m
+file: [36mC:/Users/HP/Deskto
+p/apit-main/src/lib/supabaseD
+ata.js[31m
+    at failureErrorWithLog (C
+:\Users\HP\Desktop\apit-main\
+node_modules\esbuild\lib\main
+.js:1748:15)
+    at C:\Users\HP\Desktop\ap
+it-main\node_modules\esbuild\
+lib\main.js:1017:50
+    at 
+responseCallbacks.<computed> 
+(C:\Users\HP\Desktop\apit-mai
+n\node_modules\esbuild\lib\ma
+in.js:884:9)
+    at handleIncomingPacket (
+C:\Users\HP\Desktop\apit-main
+\node_modules\esbuild\lib\mai
+n.js:939:12)
+    at Socket.readFromStdout 
+(C:\Users\HP\Desktop\apit-mai
+n\node_modules\esbuild\lib\ma
+in.js:862:7)
+    at Socket.emit 
+(node:events:508:28)
+    at addChunk (node:interna
+l/streams/readable:563:12)
+    at 
+readableAddChunkPushByteMode 
+(node:internal/streams/readab
+le:514:3)
+    at Readable.push (node:in
+ternal/streams/readable:394:5
+)
+    at Pipe.onStreamRead (nod
+e:internal/stream_base_common
+s:189:23)[39m

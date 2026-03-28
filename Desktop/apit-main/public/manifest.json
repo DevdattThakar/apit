@@ -1,0 +1,62 @@
+{
+    "name": "WorkForce Intel",
+    "short_name": "WFIntel",
+    "description": "WorkForce Intel - Device-friendly workforce management application",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4f46e5",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "48x48",
+            "type": "image/x-icon",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicon.ico",
+            "sizes": "192x192",
+            "type": "image/x-icon",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicon.ico",
+            "sizes": "512x512",
+            "type": "image/x-icon",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "business",
+        "productivity"
+    ],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "description": "View your dashboard",
+            "url": "/?shortcut=dashboard",
+            "icons": [
+                {
+                    "src": "/favicon.ico",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Reports",
+            "short_name": "Reports",
+            "description": "View your reports",
+            "url": "/?shortcut=reports",
+            "icons": [
+                {
+                    "src": "/favicon.ico",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "screenshots": [],
+    "prefer_related_applications": false
+}

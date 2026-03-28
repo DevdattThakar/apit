@@ -1,0 +1,18 @@
+﻿157: export function invalidateCache(keys = null) {
+240:     invalidateCache();
+376:     invalidateCache('projectItems');
+377:     invalidateCache(`projectItems_${projectId}`);
+385:     invalidateCache('projectItems');
+386:     invalidateCache(`projectItems_${projectId}`);
+711:     invalidateCache('employees');
+770:         invalidateCache('projectItems');
+774:     invalidateCache('reports');
+811:     invalidateCache('projects');
+849:     invalidateCache('projects');
+901:         invalidateCache(['projects', 'reports', 'announcements']);
+919:     invalidateCache('projects');
+941:     invalidateCache('announcements');
+964:     invalidateCache('employees');
+988: export function getCacheStatus() {
+1040:     invalidateCache,
+1041:     getCacheStatus,

@@ -1,0 +1,27 @@
+﻿157: export function invalidateCache(keys = null) {
+186: export async function supabaseLogin(email, password) {
+213: export async function supabaseLogout() {
+218: export async function getSession() {
+293: export async function fetchProjectItems(options = {}) {
+334: export async function insertProjectItems(projectId, items) {
+355: export async function deleteProjectItems(projectId) {
+364: export async function fetchEmployees(options = {}) {
+394: export async function fetchProjects(options = {}) {
+458: export async function fetchReports(options = {}) {
+538: export async function fetchReportCount(options = {}) {
+561: export async function fetchAnnouncements(options = {}) {
+629: export async function uploadReportImage(file, reportId) {
+639: export async function uploadProfilePhoto(file, userId) {
+672: export async function updateEmployee(employeeId, updates) {
+693: export async function uploadPODocument(file, projectId) {
+703: export async function insertReport(report) {
+753: export async function insertProject(project) {
+791: export async function updateProject(project) {
+829: export async function updateTeamLeader(projectId, oldTlId, newTlId) {
+884: export async function updateProjectStatus(id, status, updatedBy) {
+896: export async function insertAnnouncement(announcement) {
+921: export async function createEmployee({ name, email, department, role, password, avatar }) {
+944: export async function fetchMaterialConsumption(projectId) {
+962: export function getCacheStatus() {
+985: export const CACHE_CONFIG = {
+990: export default {
