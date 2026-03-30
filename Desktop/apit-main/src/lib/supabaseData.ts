@@ -15,6 +15,25 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
+// ── Types ──
+interface CacheOptions {
+    ttl?: number;
+    forceRefresh?: boolean;
+    useCache?: boolean;
+}
+
+interface FetchOptions extends CacheOptions {
+    projectId?: string;
+    limit?: number;
+    offset?: number;
+    employeeId?: string;
+    department?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+}
+
+
 // ── Auth Error Handling ──
 const handleAuthError = (error) => {
     // Check if this is an auth error
@@ -79,10 +98,10 @@ const PAGINATION = {
  * SWR Pattern: Return stale data immediately, revalidate in background
  * This improves perceived performance without changing behavior
  */
-async function getWithSWR(cacheKey, fetchFn, options = {}) {
-    const swrEntry = swrCache[cacheKey];
+async function getWithSWR(cacheKey: string, fetchFn: () => Promise<any>, options: CacheOptions = {}) {
+    const swrEntry = swrCache[cacheKey as keyof typeof swrCache];
     const now = Date.now();
-    const ttl = options.ttl || CACHE_TTL[cacheKey] || 5 * 60 * 1000;
+    const ttl = options.ttl || CACHE_TTL[cacheKey as keyof typeof CACHE_TTL] || 5 * 60 * 1000;
     const forceRefresh = options.forceRefresh || false;
 
     // Check if we have fresh cached data
@@ -129,7 +148,7 @@ async function getWithSWR(cacheKey, fetchFn, options = {}) {
 }
 
 // Keep backward compatibility with original getWithCache
-async function getWithCache(cacheKey, fetchFn, options = {}) {
+async function getWithCache(cacheKey: string, fetchFn: () => Promise<any>, options: CacheOptions = {}) {
     return getWithSWR(cacheKey, fetchFn, options);
 }
 
@@ -183,10 +202,25 @@ export function invalidateCache(keys = null) {
 }
 
 export async function supabaseLogin(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { ok: false, error: error.message };
-
-    console.log('Auth login success. user.id:', data.user.id, 'user.email:', data.user.email);
+    const trimmedEmail = (email || "").trim();
+    console.log('--- LOGIN ATTEMPT START ---', { email: trimmedEmail });
+    
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ 
+            email: trimmedEmail, 
+            password: password
+        });
+        
+        if (error) {
+            console.error('--- SUPABASE AUTH ERROR ---', {
+                message: error.message,
+                status: error.status,
+                code: error.code || 'n/a'
+            });
+            return { ok: false, error: error.message };
+        }
+        
+        console.log('Auth login success. user.id:', data.user?.id);
 
     // 1. Try by auth_user_id first (fastest, most reliable)
     const { data: emp, error: empErr } = await supabase
@@ -231,8 +265,12 @@ export async function supabaseLogin(email, password) {
         }
     }
 
-    console.error('No employee record found. Auth user email:', authEmail, '| Typed email:', email);
-    return { ok: false, error: "No employee record found for this account. Please contact your administrator." };
+        console.error('No employee record found. Auth user email:', data.user?.email, '| Typed email:', trimmedEmail);
+        return { ok: false, error: "No employee record found for this account. Please contact your administrator." };
+    } catch (err) {
+        console.error('--- UNEXPECTED LOGIN ERROR ---', err);
+        return { ok: false, error: "An unexpected error occurred during login. Please try again." };
+    }
 }
 
 
@@ -341,7 +379,7 @@ function mapEmployee(emp) {
 }
 
 // ── Project Items (unchanged behavior) ──
-export async function fetchProjectItems(options = {}) {
+export async function fetchProjectItems(options: FetchOptions = {}) {
     const useCache = options.useCache !== false;
     const cacheKey = options.projectId ? `projectItems_${options.projectId}` : 'projectItems';
 
@@ -352,23 +390,23 @@ export async function fetchProjectItems(options = {}) {
             .order("created_at");
 
         if (options.projectId) {
-            query = query.eq("project_id", options.projectId);
+            query = (query as any).eq("project_id", options.projectId);
         }
 
         if (options.limit) {
-            query = query.limit(options.limit);
+            query = (query as any).limit(options.limit);
         }
 
-        const { data, error } = await query;
+        const { data, error }: { data: any[] | null, error: any } = await query as any;
         if (error) { console.error("fetchProjectItems:", error); return []; }
         return data.map(i => ({
             id: i.id,
             projectId: i.project_id,
-            description: i.item_name,
+            description: i.item_name || "",
             quantity: Number(i.supplied_qty) || 0,
             usedQty: Number(i.used_qty) || 0,
             unit: i.unit,
-            model: i.model_number,
+            model: i.model_number || "-",
             workType: i.work_type,
             category: i.category,
             rate: i.rate,
@@ -387,15 +425,16 @@ export async function insertProjectItems(projectId, items) {
     console.log("insertProjectItems - projectId:", projectId, "items:", items);
     const rows = items.map(i => ({
         project_id: projectId,
-        item_name: i.description,
-        supplied_qty: Math.round(Number(i.qty || i.quantity || 0)),
+        item_name: i.description || i.name || i.item_name || "",
+        supplied_qty: Math.round(Number(i.qty || i.quantity || i.supplied_qty || 0)),
+        used_qty: Number(i.usedQty || i.used_qty || 0),
+        model_number: i.model || i.model_number || null,
         unit: i.unit || "Nos",
-        model_number: i.model || i.partNumber || null,
         work_type: i.workType || null,
         category: i.category || "Other",
         rate: i.rate || null,
-        used_qty: 0,
     }));
+
     console.log("insertProjectItems - rows to insert:", rows);
     const { data, error } = await supabase.from("project_items").insert(rows).select();
     if (error) { console.error("insertProjectItems ERROR:", error); throw error; }
@@ -415,7 +454,7 @@ export async function deleteProjectItems(projectId) {
 }
 
 // ── Employees (unchanged behavior) ──
-export async function fetchEmployees(options = {}) {
+export async function fetchEmployees(options: FetchOptions = {}) {
     const useCache = options.useCache !== false;
     const forceRefresh = options.forceRefresh || false;
 
@@ -426,11 +465,11 @@ export async function fetchEmployees(options = {}) {
             .order("name");
 
         if (options.department) {
-            query = query.eq("department", options.department);
+            query = (query as any).eq("department", options.department);
         }
 
         if (options.limit) {
-            query = query.limit(options.limit);
+            query = (query as any).limit(options.limit);
         }
 
         const { data, error } = await query;
@@ -445,7 +484,7 @@ export async function fetchEmployees(options = {}) {
 }
 
 // ── Projects (unchanged behavior) ──
-export async function fetchProjects(options = {}) {
+export async function fetchProjects(options: FetchOptions = {}) {
     const useCache = options.useCache !== false;
     const forceRefresh = options.forceRefresh || false;
 
@@ -462,18 +501,18 @@ export async function fetchProjects(options = {}) {
             .order("created_at", { ascending: false });
 
         if (options.status) {
-            query = query.eq("status", options.status);
+            query = (query as any).eq("status", options.status);
         }
 
         if (options.department) {
-            query = query.eq("department", options.department);
+            query = (query as any).eq("department", options.department);
         }
 
         if (options.limit) {
-            query = query.limit(options.limit);
+            query = (query as any).limit(options.limit);
         }
 
-        const { data, error } = await query;
+        const { data, error }: { data: any[] | null, error: any } = await query as any;
         if (error) { console.error("fetchProjects:", error); return []; }
         return data.map(p => ({
             id: p.id,
@@ -492,7 +531,7 @@ export async function fetchProjects(options = {}) {
             endDate: p.end_date,
             description: p.description,
             assignedEmployees: p.assigned_employees || [],
-            teamLeaderId: p.team_leader_id,
+            teamLeaderId: p.team_leader_id || null,
             lastUpdatedAt: p.last_updated_at,
             lastUpdateType: p.last_update_type,
             poDocuments: p.po_documents || [],
@@ -509,7 +548,7 @@ export async function fetchProjects(options = {}) {
 }
 
 // ── Reports (enhanced pagination) ──
-export async function fetchReports(options = {}) {
+export async function fetchReports(options: FetchOptions = {}) {
     const useCache = options.useCache !== false;
     const forceRefresh = options.forceRefresh || false;
     const limit = options.limit || PAGINATION.reports.initial;
@@ -530,18 +569,18 @@ export async function fetchReports(options = {}) {
             .range(offset, offset + limit - 1);
 
         if (options.employeeId) {
-            query = query.eq("employee_id", options.employeeId);
+            query = (query as any).eq("employee_id", options.employeeId);
         }
 
         if (options.projectId) {
-            query = query.eq("project_id", options.projectId);
+            query = (query as any).eq("project_id", options.projectId);
         }
 
         if (options.startDate) {
-            query = query.gte("date", options.startDate);
+            query = (query as any).gte("date", options.startDate);
         }
         if (options.endDate) {
-            query = query.lte("date", options.endDate);
+            query = (query as any).lte("date", options.endDate);
         }
 
         // Optimize: Only fetch full data if image is uploaded
@@ -592,17 +631,17 @@ export async function fetchReports(options = {}) {
     return fetchFn();
 }
 
-export async function fetchReportCount(options = {}) {
+export async function fetchReportCount(options: FetchOptions = {}) {
     const cacheKey = `reportCount_${options.employeeId || 'all'}_${options.projectId || 'all'}`;
 
     const fetchFn = async () => {
         let query = supabase.from("reports").select("id", { count: "exact", head: true });
 
         if (options.employeeId) {
-            query = query.eq("employee_id", options.employeeId);
+            query = (query as any).eq("employee_id", options.employeeId);
         }
         if (options.projectId) {
-            query = query.eq("project_id", options.projectId);
+            query = (query as any).eq("project_id", options.projectId);
         }
 
         const { count, error } = await query;
@@ -615,7 +654,7 @@ export async function fetchReportCount(options = {}) {
 }
 
 // ── Announcements (unchanged behavior) ──
-export async function fetchAnnouncements(options = {}) {
+export async function fetchAnnouncements(options: FetchOptions = {}) {
     const useCache = options.useCache !== false;
     const forceRefresh = options.forceRefresh || false;
     const limit = options.limit || PAGINATION.announcements.initial;
@@ -629,8 +668,9 @@ export async function fetchAnnouncements(options = {}) {
             .range(offset, offset + limit - 1);
 
         if (options.department) {
-            query = query.eq("department", options.department);
+            query = (query as any).eq("department", options.department);
         }
+
 
         const { data, error, count } = await query;
         if (error) { console.error("fetchAnnouncements:", error); return { announcements: [], total: 0 }; }
@@ -791,14 +831,15 @@ export async function insertReport(report) {
     if (report.projectItemId && report.workQtyDone > 0) {
         const { data: item } = await supabase
             .from("project_items")
-            .select("used_qty")
+            .select("supplied_qty, used_qty")
             .eq("id", report.projectItemId)
             .maybeSingle();
 
         if (item) {
+            const newUsedQty = (Number(item.used_qty) || 0) + Number(report.workQtyDone);
             await supabase
                 .from("project_items")
-                .update({ used_qty: (Number(item.used_qty) || 0) + Number(report.workQtyDone) })
+                .update({ used_qty: newUsedQty })
                 .eq("id", report.projectItemId);
         }
 
@@ -809,8 +850,9 @@ export async function insertReport(report) {
     // Invalidate reports cache
     invalidateCache('reports');
 
-    return data;
+    return (data as any);
 }
+
 
 export async function insertProject(project) {
     const { data, error } = await supabase.from("projects").insert({
@@ -830,14 +872,8 @@ export async function insertProject(project) {
         end_date: project.endDate || null,
         description: project.description,
         assigned_employees: project.assignedEmployees || [],
-        team_leader_id: project.teamLeaderId || null,
-        last_updated_at: project.lastUpdatedAt || new Date().toISOString(),
-        last_update_type: project.lastUpdateType || "Project created",
-        po_documents: project.poDocuments || [],
-        contact_person_name: project.contactName || "",
-        contact_person_email: project.contactEmail || "",
-        contact_person_mobile: project.contactMobile || "",
-    }).select().single();
+    } as any).select().single();
+
     if (error) {
         console.error("insertProject ERROR:", error);
         throw error;
@@ -874,7 +910,8 @@ export async function updateProject(project) {
         contact_person_name: project.contactName || "",
         contact_person_email: project.contactEmail || "",
         contact_person_mobile: project.contactMobile || "",
-    }).eq("id", project.id).select();
+    } as any).eq("id", project.id).select();
+
 
     if (error) {
         console.error("updateProject ERROR:", error);
@@ -895,7 +932,8 @@ export async function updateTeamLeader(projectId, oldTlId, newTlId) {
             team_leader_id: newTlId,
             last_updated_at: new Date().toISOString(),
             last_update_type: "Team leader changed",
-        }).eq("id", projectId);
+        } as any).eq("id", projectId);
+
 
         if (projectError) {
             console.error("updateTeamLeader (project):", projectError);
@@ -1006,16 +1044,16 @@ export async function createEmployee({ name, email, department, role, password, 
 export async function fetchMaterialConsumption(projectId) {
     const { data, error } = await supabase
         .from("project_items")
-        .select("item_name, model_number, supplied_qty, used_qty, unit, project_id")
-        .eq("project_id", projectId);
+        .select("item_name, supplied_qty, used_qty, unit, model_number, project_id")
+        .eq("project_id", projectId) as any;
 
     if (error) { console.error("fetchMaterialConsumption:", error); return []; }
-    return data.map(m => ({
-        itemName: m.item_name,
+    return (data as any[]).map(m => ({
+        itemName: m.item_name || "",
         modelNumber: m.model_number || "-",
-        suppliedQty: m.supplied_qty,
-        consumedQty: m.used_qty,
-        balanceQty: m.supplied_qty - m.used_qty,
+        suppliedQty: Number(m.supplied_qty) || 0,
+        consumedQty: Number(m.used_qty) || 0,
+        balanceQty: (Number(m.supplied_qty) || 0) - (Number(m.used_qty) || 0),
         unit: m.unit,
     }));
 }

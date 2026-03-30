@@ -99,7 +99,238 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html,
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    box-sizing: border-box;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Make all media elements responsive */
+  img, 
+  video, 
+  iframe, 
+  canvas, 
+  svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Support for mobile browser bottom navigation bars */
+  .min-h-screen {
+    min-height: 100vh; /* Fallback */
+    min-height: 100dvh;
+  }
+  
+  .h-screen {
+    height: 100vh; /* Fallback */
+    height: 100dvh;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   COMPREHENSIVE RESPONSIVE OVERRIDES
+   These rules ONLY affect layout/CSS — zero JS logic changes.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Global safety ─────────────────────────────────────────── */
+html, body, #root {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Tables: always scrollable, never clip content */
+table {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure all fixed-px containers can shrink */
+[style*="width: 740px"],
+[style*="width: 800px"],
+[style*="width: 960px"],
+[style*="width: 1024px"],
+[style*="width: 1200px"],
+[style*="width: 1280px"] {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Prevent any single element from causing horizontal scroll */
+* {
+  min-width: 0;
+}
+
+/* Images always fluid */
+img, video, canvas, svg, iframe {
+  max-width: 100% !important;
+  height: auto;
+}
+
+/* ── Mobile  (<768 px) ─────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* Main wrapper: let content scroll vertically, never clip */
+  .d-flex.vh-100,
+  .d-flex.vh-100.overflow-hidden {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    flex-direction: column !important;
+  }
+
+  /* Scrollable table wrapper on narrow screens */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+  td, th {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  /* ── Inline-grid stacking (React inline styles are rendered
+        as real CSS attributes — attribute selectors work) ── */
+
+  /* 2-column → 1 column */
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* repeat(2,…) → 1 column */
+  [style*="grid-template-columns: repeat(2"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* repeat(3,…) → 1 column */
+  [style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* repeat(4,…) → 2 columns */
+  [style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Fixed-width side panels → fluid */
+  [style*="width: 300px"],
+  [style*="width: 320px"],
+  [style*="width: 340px"],
+  [style*="width: 360px"],
+  [style*="width: 400px"],
+  [style*="width: 420px"],
+  [style*="width: 480px"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Flex rows that should stack vertically on phones */
+  [style*="flex-direction: row"],
+  .d-flex.flex-row,
+  .d-flex.flex-md-row {
+    flex-wrap: wrap !important;
+  }
+
+  /* Login split-panel: left panel already hidden via d-none d-md-flex;
+     Ensure right panel fills fully */
+  .flex-fill.d-flex.flex-column {
+    width: 100% !important;
+  }
+
+  /* Cards & modal containers */
+  [style*="border-radius: 28px"],
+  [style*="border-radius: 24px"],
+  [style*="border-radius: 20px"] {
+    border-radius: clamp(12px, 3vw, 20px) !important;
+  }
+
+  /* Headings — prevent overflow */
+  h1, h2, h3, h4, h5, h6 {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  /* Buttons — prevent text clip */
+  button {
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+  }
+
+  /* Ensure TopBar action buttons wrap nicely */
+  .topbar-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  /* Panels (notification, profile dropdowns) */
+  .notif-panel,
+  .profile-panel,
+  [class*="panel"] {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  /* Tabs — allow horizontal scroll instead of overflow */
+  [role="tablist"],
+  .tab-list {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+  }
+
+  /* Stat cards in dashboard — 2-col grid for readability */
+  .stat-cards-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Inputs: ensure they never exceed viewport */
+  input, select, textarea {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* ── Tablet (768 px – 1024 px) ─────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1024px) {
+
+  /* 4-col grids → 2 columns */
+  [style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* 3-col grids → 2 columns on tight tablets */
+  [style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Sidebar slightly narrower on tablets */
+  .sidebar {
+    width: clamp(160px, 14vw, 220px) !important;
+  }
+
+  /* Main content more padding */
+  .main-content {
+    padding: clamp(10px, 2.5vw, 20px) !important;
+  }
+}
+
+/* ── Safe viewport height (dynamic) on all sizes ───────────── */
+.vh-100 {
+  height: 100vh;
+  height: 100dvh;
+}
+

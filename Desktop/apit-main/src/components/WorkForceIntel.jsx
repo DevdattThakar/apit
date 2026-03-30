@@ -802,43 +802,149 @@ const DEPARTMENTS = ["IT", "Networking", "CCTV", "Security", "Maintenance"];
 const G = `
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; max-width: 100%; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   body { 
     font-family: 'Nunito', system-ui, sans-serif; 
     overflow-x: hidden; 
     -webkit-tap-highlight-color: transparent;
     background: #f8faff;
+    width: 100vw;
   }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #bfdbfe; border-radius: 10px; }
   
-  input, select, textarea { font-size: 16px !important; }
-  img { max-width: 100%; height: auto; }
+  input, select, textarea { font-size: 16px !important; } /* Prevents iOS auto-zoom */
+  img, video, iframe, canvas, svg { max-width: 100%; height: auto; display: block; }
   
   /* Performance optimizations for smooth animations */
   .d-flex, .flex-fill, .overflow-hidden, .overflow-auto { transform: translateZ(0); backface-visibility: hidden; }
-  button, a, .nav-btn { will-change: transform, opacity; }
+  button, a, .nav-btn { will-change: transform, opacity; transition: transform 0.2s, opacity 0.2s; }
   
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
   
   .fu  { animation: fadeUp .38s ease both; }
-  
-  @media (max-width: 767px) {
-    .sidebar { display: none !important; }
-    .bottom-nav { display: flex !important; }
-    .main-content { padding-bottom: 72px !important; }
-    h1, h2 { word-break: break-word; }
-    .modal-box { 
-      position: fixed; bottom: 0; left: 0; right: 0; 
-      border-radius: 20px 20px 0 0; max-height: 90vh; 
-      overflow-y: auto; animation: slideUp .3s ease; 
-    }
+
+  /* Responsive utility classes */
+  .resp-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)) !important;
+    gap: 16px !important;
   }
+  .resp-flex {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+
+  /* Topbar: flex with wrap so it never overflows viewport */
+  .topbar-container { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  /* ── Desktop (≥768px) ───────────────────────────────── */
   @media (min-width: 768px) {
     .sidebar { display: flex !important; }
     .bottom-nav { display: none !important; }
+    .mobile-only { display: none !important; }
+    .desktop-only { display: flex !important; }
+  }
+
+  /* ── Tablet (768–1024px) ────────────────────────────── */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .sidebar { width: clamp(160px, 14vw, 220px) !important; }
+    .main-content { padding: clamp(10px, 2.5vw, 20px) !important; }
+    [style*="grid-template-columns: repeat(4"] { grid-template-columns: repeat(2, 1fr) !important; }
+    [style*="grid-template-columns: repeat(3"] { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+
+  /* ── Mobile (<768px) ────────────────────────────────── */
+  @media (max-width: 767px) {
+    /* Navigation */
+    .sidebar { display: none !important; }
+    .bottom-nav { display: flex !important; }
+    .mobile-only { display: flex !important; }
+    .desktop-only { display: none !important; }
+
+    /* Main content area */
+    .main-content {
+      padding: 12px !important;
+      padding-bottom: 84px !important;
+      overflow-x: hidden !important;
+    }
+    /* App root wrapper — column layout, use dvh to account for iOS chrome */
+    .d-flex.vh-100,
+    .d-flex.vh-100.overflow-hidden {
+      height: auto !important;
+      min-height: 100dvh !important;
+      flex-direction: column !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 { word-break: break-word; overflow-wrap: break-word; }
+    .topbar-container h1 { font-size: clamp(16px, 5vw, 22px) !important; }
+    .topbar-container p  { font-size: 11px !important; }
+
+    /* TopBar stacks vertically */
+    .topbar-container {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+      margin-bottom: 18px !important;
+    }
+
+    /* Bottom-sheet modals */
+    .modal-box {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      border-radius: 24px 24px 0 0; max-height: 92vh;
+      overflow-y: auto; animation: slideUp .3s ease;
+      width: 100% !important; max-width: 100% !important;
+    }
+
+    /* Grid stacking — attribute selectors match real DOM style attr */
+    .mobile-stack { grid-template-columns: 1fr !important; flex-direction: column !important; }
+    [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    [style*="grid-template-columns: repeat(2"] { grid-template-columns: 1fr !important; }
+    [style*="grid-template-columns: repeat(3"] { grid-template-columns: 1fr !important; }
+    [style*="grid-template-columns: repeat(4"] { grid-template-columns: 1fr 1fr !important; }
+    .resp-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+
+    /* Tables: horizontal scroll instead of overflow clipping */
+    table {
+      display: block !important;
+      width: 100% !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Floating panels: always within viewport width */
+    .notif-panel, .profile-panel {
+      right: 10px !important;
+      left: 10px !important;
+      width: auto !important;
+      max-width: calc(100vw - 20px) !important;
+      top: 124px !important;
+    }
+
+    /* Fixed-px wide panels → fluid */
+    [style*="width: 300px"],[style*="width: 320px"],
+    [style*="width: 340px"],[style*="width: 360px"],
+    [style*="width: 400px"],[style*="width: 420px"],
+    [style*="width: 480px"] {
+      width: 100% !important; max-width: 100% !important;
+    }
+
+    /* Buttons / inputs */
+    button { white-space: normal; word-break: break-word; max-width: 100%; }
+    input, select, textarea { max-width: 100%; box-sizing: border-box; }
+
+    /* Login right panel fills card */
+    .flex-fill.d-flex.flex-column { width: 100% !important; }
+
+    /* Misc utilities */
+    .p-mobile-0 { padding: 0 !important; }
+    .m-mobile-0 { margin: 0 !important; }
   }
 
   input:focus, select:focus, textarea:focus {
@@ -1024,8 +1130,8 @@ const ErrTip = ({ children }) => (
 // Section heading (blue, italic like iPeople)
 const SH = ({ children, sub }) => (
   <div style={{ marginBottom: 20 }} className="fu">
-    <h2 style={{ fontSize: 22, fontWeight: 800, color: C.blue, letterSpacing: "-.01em", fontStyle: "italic", margin: "0 0 2px" }}>{children}</h2>
-    {sub && <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>{sub}</p>}
+    <h2 style={{ fontSize: "clamp(18px, 4vw, 22px)", fontWeight: 800, color: C.blue, letterSpacing: "-.01em", fontStyle: "italic", margin: "0 0 2px", wordBreak: "break-word" }}>{children}</h2>
+    {sub && <p style={{ fontSize: 13, color: C.muted, margin: 0, wordBreak: "break-word" }}>{sub}</p>}
   </div>
 );
 
@@ -1462,7 +1568,7 @@ function Sidebar({ role, active, onNav, user, onLogout, unreadAnnouncements = 0 
   );
 
   return (
-    <div className="sidebar" style={{
+    <div className="sidebar desktop-only" style={{
       width: "clamp(180px, 16vw, 250px)", background: C.white, borderRight: `1px solid ${C.border}`,
       display: "flex", flexDirection: "column", height: "100vh", position: "sticky", top: 0, flexShrink: 0,
       boxShadow: "2px 0 16px rgba(37,99,235,.05)", zIndex: 100
@@ -1549,7 +1655,7 @@ function BottomNav({ role, active, onNav, unreadAnnouncements }) {
   const navItems = role === "admin" ? adminNav : role === "tl" ? tlNav : empNav;
 
   return (
-    <div className="bottom-nav" style={{
+    <div className="bottom-nav mobile-only" style={{
       position: "fixed", bottom: 0, left: 0, right: 0, height: 60, background: C.white,
       borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-around",
       alignItems: "center", zIndex: 9000
@@ -1754,14 +1860,14 @@ function TopBar({ title, sub, user, onLogout, announcements = [], setEmployees, 
   const Modal = ({ titleText, onClose, children }) => (
     <div style={{
       position: "fixed", inset: 0, zIndex: 99999, background: "rgba(15,23,42,.5)",
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 20
+      display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(10px, 4vw, 20px)"
     }}
       onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
         background: C.white, borderRadius: 24,
-        width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto",
+        width: "100%", maxWidth: 480, maxHeight: "92vh", overflowY: "auto",
         boxShadow: "0 24px 80px rgba(37,99,235,.22)"
-      }} className="fu">
+      }} className="fu modal-box">
         <div style={{
           background: `linear-gradient(135deg,${C.blue},${C.blueL})`,
           padding: "20px 26px", display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -1781,11 +1887,11 @@ function TopBar({ title, sub, user, onLogout, announcements = [], setEmployees, 
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, position: "relative", zIndex: 1000 }} className="fu">
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: C.blue, fontStyle: "italic", margin: "0 0 2px", letterSpacing: "-.01em" }}>{title}</h1>
-          {sub && <p style={{ fontSize: 13, color: C.muted, margin: 0, fontWeight: 600 }}>{sub}</p>}
-        </div>
+    <div className="topbar-container d-flex justify-content-between align-items-center fu" style={{ marginBottom: 24, position: "relative", zIndex: 1000 }}>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <h1 style={{ fontSize: "clamp(18px, 4vw, 22px)", fontWeight: 800, color: C.blue, fontStyle: "italic", margin: "0 0 2px", letterSpacing: "-.01em", wordBreak: "break-word" }}>{title}</h1>
+        {sub && <p style={{ fontSize: 12, color: C.muted, margin: 0, fontWeight: 600, wordBreak: "break-word" }}>{sub}</p>}
+      </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {/* Bell button */}
@@ -1823,7 +1929,7 @@ function TopBar({ title, sub, user, onLogout, announcements = [], setEmployees, 
             </button>
 
             {profileOpen && (
-              <div id="profile-panel" style={{
+              <div id="profile-panel" className="profile-panel" style={{
                 position: "fixed", top: 72, right: 24, width: 260,
                 background: C.white, borderRadius: 20, border: `1px solid ${C.border}`,
                 boxShadow: "0 20px 60px rgba(37,99,235,.2)", overflow: "hidden",
@@ -1888,7 +1994,7 @@ function TopBar({ title, sub, user, onLogout, announcements = [], setEmployees, 
 
         {/* ── Notification Dropdown ── */}
         {open && (
-          <div id="notif-panel" style={{
+          <div id="notif-panel" className="notif-panel" style={{
             position: "fixed", top: 72, right: 90, width: 360, background: C.white,
             borderRadius: 20, border: `1px solid ${C.border}`,
             boxShadow: "0 20px 60px rgba(37,99,235,.2)", overflow: "hidden",
@@ -2208,7 +2314,7 @@ function AdminOverview({ onNavigate, user, projects, reports, projectItems, empl
       <TopBar title="Dashboard" sub={`${new Date().toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" })} · System operational`} user={user} onLogout={onLogout} announcements={announcements} setEmployees={setEmployees} profilePhotoPreview={profilePhotoPreview} setProfilePhotoPreview={setProfilePhotoPreview} />
 
       {/* Welcome card */}
-      <div className="fu" style={{
+      <div className="fu mobile-stack" style={{
         background: `linear-gradient(135deg,${C.blue},${C.blueL})`, borderRadius: 20,
         padding: "20px 28px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between",
         boxShadow: "0 6px 24px rgba(37,99,235,.25)"
@@ -2220,7 +2326,7 @@ function AdminOverview({ onNavigate, user, projects, reports, projectItems, empl
         <Pill color="green">● System Online</Pill>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
+      <div className="resp-grid" style={{ marginBottom: 22 }}>
         <SC label="Total Employees" value={(employees || MOCK_EMPLOYEES).length} sub="Active headcount" icon="👤"
           grad={`linear-gradient(135deg,${C.blue},${C.blueL})`} cls="fu" />
         <SC label="Reports Today" value={today.length} sub="As of now" icon="📝"
@@ -2385,37 +2491,39 @@ function AdminOverview({ onNavigate, user, projects, reports, projectItems, empl
           <span style={{ fontSize: 15, fontWeight: 800, color: C.text }}>📋 Recent Submissions</span>
           <button onClick={() => onNavigate("reports")} style={{ fontSize: 13, color: C.blue, background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }}>View all →</button>
         </div>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead><tr style={{ background: "#f8faff" }}>
-            {["Employee", "Project", "Department", "Date", "Hours", "Manpower", "Work Done", "Status"].map(h => (
-              <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 10, color: C.light, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>{h}</th>
-            ))}
-          </tr></thead>
-          <tbody>
-            {[...allReports].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6).map(r => {
-              const allEmployeesBank = (employees || MOCK_EMPLOYEES);
-              const emp = allEmployeesBank.find(e => e.id === r.employeeId);
-              const proj = allProjects.find(p => p.id === r.projectId);
-              return (
-                <tr key={r.id} className="row-hover" style={{ borderTop: `1px solid #f0f6ff`, transition: "background .15s" }}>
-                  <td style={{ padding: "12px 16px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <Avt initials={emp?.avatar} name={emp?.name} size={28} />
-                      <span style={{ fontSize: 13, color: C.text, fontWeight: 700 }}>{emp?.name}</span>
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px 16px", fontSize: 11, color: C.muted, fontWeight: 600 }}>{proj?.name?.slice(0, 22)}{proj?.name?.length > 22 ? "…" : ""}</td>
-                  <td style={{ padding: "12px 16px" }}><Pill color="blue">{emp?.department}</Pill></td>
-                  <td style={{ padding: "12px 16px", fontSize: 12, color: C.muted, fontWeight: 600 }}>{r.date}</td>
-                  <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 900, color: C.blue }}>{r.hours}h</td>
-                  <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 800, color: "#7c3aed" }}>{r.manpowerCount || "—"} pax</td>
-                  <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 900, color: "#059669" }}>{r.workQtyDone || "—"} {proj?.unitType || ""}</td>
-                  <td style={{ padding: "12px 16px" }}><Pill color="green">✓ Processed</Pill></td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600 }}>
+            <thead><tr style={{ background: "#f8faff" }}>
+              {["Employee", "Project", "Department", "Date", "Hours", "Manpower", "Work Done", "Status"].map(h => (
+                <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 10, color: C.light, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>{h}</th>
+              ))}
+            </tr></thead>
+            <tbody>
+              {[...allReports].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6).map(r => {
+                const allEmployeesBank = (employees || MOCK_EMPLOYEES);
+                const emp = allEmployeesBank.find(e => e.id === r.employeeId);
+                const proj = allProjects.find(p => p.id === r.projectId);
+                return (
+                  <tr key={r.id} className="row-hover" style={{ borderTop: `1px solid #f0f6ff`, transition: "background .15s" }}>
+                    <td style={{ padding: "12px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <Avt initials={emp?.avatar} name={emp?.name} size={28} />
+                        <span style={{ fontSize: 13, color: C.text, fontWeight: 700 }}>{emp?.name}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px 16px", fontSize: 11, color: C.muted, fontWeight: 600 }}>{proj?.name?.slice(0, 22)}{proj?.name?.length > 22 ? "…" : ""}</td>
+                    <td style={{ padding: "12px 16px" }}><Pill color="blue">{emp?.department}</Pill></td>
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: C.muted, fontWeight: 600 }}>{r.date}</td>
+                    <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 900, color: C.blue }}>{r.hours}h</td>
+                    <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 800, color: "#7c3aed" }}>{r.manpowerCount || "—"} pax</td>
+                    <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 900, color: "#059669" }}>{r.workQtyDone || "—"} {proj?.unitType || ""}</td>
+                    <td style={{ padding: "12px 16px" }}><Pill color="green">✓ Processed</Pill></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </W>
     </div>
   );
@@ -2503,77 +2611,79 @@ function ReportsList({ onSelect, user, onLogout, reports, employees, projects, a
       </W>
 
       <W cls="fu2">
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead><tr style={{ background: "#f8faff" }}>
-            {["Employee", "Department", "Project / Location", "Date", "Hours", "Type", "Image", "Issues", "GPS", "Actions"].map(h => (
-              <th key={h} style={{ padding: "10px 18px", textAlign: "left", fontSize: 10, color: C.light, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>{h}</th>
-            ))}
-          </tr></thead>
-          <tbody>
-            {filtered.map(r => {
-              const emp = allEmployees.find(e => e.id === r.employeeId);
-              const proj = allProjects.find(p => p.id === r.projectId);
-              const isOffSite = r.isOffSite;
-              return (
-                <tr key={r.id} className="row-hover" style={{
-                  borderTop: `1px solid #f0f6ff`, cursor: "pointer", transition: "background .15s",
-                  background: isOffSite ? "#faf5ff" : "transparent"
-                }}
-                  onClick={() => onSelect(r)}>
-                  <td style={{ padding: "12px 18px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <Avt initials={emp?.avatar} name={emp?.name} size={30} />
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{emp?.name}</div>
-                        <div style={{ fontSize: 10, color: C.light, fontWeight: 600 }}>{emp?.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px 18px" }}><Pill color="blue">{emp?.department}</Pill></td>
-                  <td style={{ padding: "12px 18px", fontSize: 12, color: C.muted, fontWeight: 600 }}>
-                    {isOffSite ? (
-                      <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                          <span>🌍</span>
-                          <span style={{ color: "#7c3aed" }}>{r.offSiteWorkType}</span>
-                        </div>
-                        <div style={{ fontSize: 10, color: C.light, marginTop: 2 }}>
-                          {r.offSiteLocation?.slice(0, 25)}{r.offSiteLocation?.length > 25 ? "…" : ""}
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
+            <thead><tr style={{ background: "#f8faff" }}>
+              {["Employee", "Department", "Project / Location", "Date", "Hours", "Type", "Image", "Issues", "GPS", "Actions"].map(h => (
+                <th key={h} style={{ padding: "10px 18px", textAlign: "left", fontSize: 10, color: C.light, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>{h}</th>
+              ))}
+            </tr></thead>
+            <tbody>
+              {filtered.map(r => {
+                const emp = allEmployees.find(e => e.id === r.employeeId);
+                const proj = allProjects.find(p => p.id === r.projectId);
+                const isOffSite = r.isOffSite;
+                return (
+                  <tr key={r.id} className="row-hover" style={{
+                    borderTop: `1px solid #f0f6ff`, cursor: "pointer", transition: "background .15s",
+                    background: isOffSite ? "#faf5ff" : "transparent"
+                  }}
+                    onClick={() => onSelect(r)}>
+                    <td style={{ padding: "12px 18px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <Avt initials={emp?.avatar} name={emp?.name} size={30} />
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{emp?.name}</div>
+                          <div style={{ fontSize: 10, color: C.light, fontWeight: 600 }}>{emp?.email}</div>
                         </div>
                       </div>
-                    ) : (
-                      proj?.name?.slice(0, 22) + (proj?.name?.length > 22 ? "…" : "")
-                    )}
-                  </td>
-                  <td style={{ padding: "12px 18px", fontSize: 12, color: C.muted, fontWeight: 600 }}>{r.date}</td>
-                  <td style={{ padding: "12px 18px", fontSize: 15, fontWeight: 900, color: C.blue }}>{r.hours}h</td>
-                  <td style={{ padding: "12px 18px" }}>
-                    {isOffSite ? (
-                      <Pill color="purple">🌍 Off-Site</Pill>
-                    ) : (
-                      <Pill color="blue">🏗 Site</Pill>
-                    )}
-                  </td>
-                  <td style={{ padding: "12px 18px" }}>
-                    {(r.imageUploaded || r.imageUrl) ? <Pill color="green">📷 Yes</Pill> : <span style={{ fontSize: 12, color: C.light }}>—</span>}
-                  </td>
-                  <td style={{ padding: "12px 18px" }}>
-                    {r.issuesFaced?.length > 0 ? <Pill color="amber">⚠ {r.issuesFaced.length}</Pill> : <span style={{ fontSize: 12, color: C.light }}>—</span>}
-                  </td>
-                  <td style={{ padding: "12px 18px" }}><Pill color="green">✓ GPS</Pill></td>
-                  <td style={{ padding: "12px 18px" }} onClick={e => e.stopPropagation()}>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <Btn sm v="soft" onClick={() => onSelect(r)}>View</Btn>
-                      <Btn sm v="ghost"
-                        icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>}
-                        onClick={() => generateReportPDF(r, emp, proj)}>PDF</Btn>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td style={{ padding: "12px 18px" }}><Pill color="blue">{emp?.department}</Pill></td>
+                    <td style={{ padding: "12px 18px", fontSize: 12, color: C.muted, fontWeight: 600 }}>
+                      {isOffSite ? (
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                            <span>🌍</span>
+                            <span style={{ color: "#7c3aed" }}>{r.offSiteWorkType}</span>
+                          </div>
+                          <div style={{ fontSize: 10, color: C.light, marginTop: 2 }}>
+                            {r.offSiteLocation?.slice(0, 25)}{r.offSiteLocation?.length > 25 ? "…" : ""}
+                          </div>
+                        </div>
+                      ) : (
+                        proj?.name?.slice(0, 22) + (proj?.name?.length > 22 ? "…" : "")
+                      )}
+                    </td>
+                    <td style={{ padding: "12px 18px", fontSize: 12, color: C.muted, fontWeight: 600 }}>{r.date}</td>
+                    <td style={{ padding: "12px 18px", fontSize: 15, fontWeight: 900, color: C.blue }}>{r.hours}h</td>
+                    <td style={{ padding: "12px 18px" }}>
+                      {isOffSite ? (
+                        <Pill color="purple">🌍 Off-Site</Pill>
+                      ) : (
+                        <Pill color="blue">🏗 Site</Pill>
+                      )}
+                    </td>
+                    <td style={{ padding: "12px 18px" }}>
+                      {(r.imageUploaded || r.imageUrl) ? <Pill color="green">📷 Yes</Pill> : <span style={{ fontSize: 12, color: C.light }}>—</span>}
+                    </td>
+                    <td style={{ padding: "12px 18px" }}>
+                      {r.issuesFaced?.length > 0 ? <Pill color="amber">⚠ {r.issuesFaced.length}</Pill> : <span style={{ fontSize: 12, color: C.light }}>—</span>}
+                    </td>
+                    <td style={{ padding: "12px 18px" }}><Pill color="green">✓ GPS</Pill></td>
+                    <td style={{ padding: "12px 18px" }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <Btn sm v="soft" onClick={() => onSelect(r)}>View</Btn>
+                        <Btn sm v="ghost"
+                          icon={<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>}
+                          onClick={() => generateReportPDF(r, emp, proj)}>PDF</Btn>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </W>
     </div>
   );
@@ -2607,7 +2717,7 @@ function ReportDetail({ report, onBack, user, onLogout, employees = [], projects
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+      <div className="resp-grid mobile-stack" style={{ marginBottom: 16 }}>
         {/* Employee card */}
         <W cls="fu" style={{ padding: 24 }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: C.light, marginBottom: 14 }}>
@@ -2705,7 +2815,7 @@ function ReportDetail({ report, onBack, user, onLogout, employees = [], projects
           <Pill color="blue">Admin Only</Pill>
         </div>
         <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, padding: "14px 16px", background: C.bluePale, borderRadius: 14, borderLeft: `3px solid ${C.blueL}`, margin: "0 0 18px", fontWeight: 600 }}>{report.aiSummary}</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <div className="resp-grid" style={{ gap: 20 }}>
           <div>
             <div style={{ fontSize: 12, fontWeight: 800, color: C.text, marginBottom: 10 }}>Tasks Completed</div>
             {report.tasksCompleted.map((t, i) => (
@@ -2730,7 +2840,7 @@ function ReportDetail({ report, onBack, user, onLogout, employees = [], projects
       </W>
 
       {/* Actions */}
-      <div className="fu4" style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+      <div className="fu4 mobile-stack" style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <Btn v="secondary" onClick={() => downloadCSV([report])}
           icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>}>
           Export CSV
@@ -3473,7 +3583,7 @@ function BOQItemsEditor({ items, onChange }) {
           <div style={{ fontSize: 11, fontWeight: 800, color: C.blue, marginBottom: 10 }}>
             {editIdx !== null ? "✏ Edit Item" : "➕ New BOQ Item"}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+          <div className="resp-grid mobile-stack" style={{ marginBottom: 8 }}>
             <div style={{ gridColumn: "1/-1" }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, marginBottom: 3 }}>Description *</div>
               <input value={draft.description} onChange={e => setDraft(p => ({ ...p, description: e.target.value }))}
@@ -7087,7 +7197,7 @@ ${rep.issuesFaced?.length ? "⚠️ *Issues:* " + rep.issuesFaced.join(", ") : "
           {/* Auto-filled project info (hidden for off-site) */}
           {!isOffSite && selProj && (
             <div style={{ background: "#f0f9ff", border: `1px solid ${C.blueMid}`, borderRadius: 14, padding: "14px 18px", marginBottom: 20 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+              <div className="resp-grid mobile-stack" style={{ marginBottom: 12 }}>
                 {[
                   ["Company", selProj.companyName || "—"],
                   ["Project Type", selProj.projectType || "—"],
@@ -7154,7 +7264,7 @@ ${rep.issuesFaced?.length ? "⚠️ *Issues:* " + rep.issuesFaced.join(", ") : "
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div className="resp-grid mobile-stack" style={{ marginBottom: 16 }}>
             <div>
               <Lbl>People Worked Today * <span style={{ fontSize: 10, color: C.light, fontWeight: 600 }}>(incl. self, helpers, contract)</span></Lbl>
               <FI type="number" min="1" value={form.manpowerCount}
@@ -7197,7 +7307,7 @@ ${rep.issuesFaced?.length ? "⚠️ *Issues:* " + rep.issuesFaced.join(", ") : "
             <ErrMsg k="workDetails" />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div className="resp-grid mobile-stack" style={{ marginBottom: 16 }}>
             <div>
               <Lbl>Tasks Completed</Lbl>
               <FI value={form.tasksCompleted} onChange={e => setForm(p => ({ ...p, tasksCompleted: e.target.value }))}
@@ -7210,7 +7320,7 @@ ${rep.issuesFaced?.length ? "⚠️ *Issues:* " + rep.issuesFaced.join(", ") : "
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div className="resp-grid mobile-stack" style={{ marginBottom: 16 }}>
             <div>
               <Lbl>Issues / Blockers</Lbl>
               <FI value={form.issues} onChange={e => setForm(p => ({ ...p, issues: e.target.value }))}
@@ -7223,7 +7333,7 @@ ${rep.issuesFaced?.length ? "⚠️ *Issues:* " + rep.issuesFaced.join(", ") : "
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 18 }}>
+          <div className="resp-grid mobile-stack" style={{ marginBottom: 18 }}>
             <div>
               <Lbl>Hours Worked *</Lbl>
               <FI type="number" min="0.5" step="0.5" value={form.hours}
@@ -7327,13 +7437,10 @@ function EmployeeHistory({ employee, user, reports, onLogout, announcements = []
 // Runs continuously while employee is logged in, updates every 15 seconds
 function useBackgroundLocation(active, onUpdate) {
   const watchRef = useRef(null);
-  const intervalRef = useRef(null);
 
   useEffect(() => {
     if (!active) {
-      // Clean up when not active
       if (watchRef.current) { navigator.geolocation.clearWatch(watchRef.current); watchRef.current = null; }
-      if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
       return;
     }
 
@@ -7350,27 +7457,17 @@ function useBackgroundLocation(active, onUpdate) {
     };
 
     const fail = () => {
-      // No simulated locations — only real GPS data is used
       console.warn("GPS location unavailable — no location will be shared");
     };
 
     if (navigator.geolocation) {
-      // Initial fix immediately
-      navigator.geolocation.getCurrentPosition(success, fail, opts);
-      // Then watch continuously
       watchRef.current = navigator.geolocation.watchPosition(success, fail, opts);
-      // Also force a refresh every 15s in case watch stalls
-      intervalRef.current = setInterval(() => {
-        navigator.geolocation.getCurrentPosition(success, fail, opts);
-      }, 15000);
     } else {
       fail();
-      intervalRef.current = setInterval(fail, 15000);
     }
 
     return () => {
       if (watchRef.current) navigator.geolocation.clearWatch(watchRef.current);
-      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [active]);
 }
@@ -8163,7 +8260,7 @@ export default function App() {
     setRole(r);
     setSection(r === "admin" ? "overview" : (r === "tl" ? "tl-submit" : "submit"));
     if (userData) setAuthUser(userData);
-    if (r === "employee" || r === "tl") setLocationPermission("granted");
+    if (r === "employee" || r === "tl") setLocationPermission(null);
     AuditLog.push("SESSION_START", `Role: ${r}`, userData?.email || "unknown");
     SessionManager.start(() => { logout(); });
     // Load fresh data from database
@@ -8354,7 +8451,7 @@ export default function App() {
               unreadAnnouncements={role === "employee"
                 ? announcements.filter(a => (a.recipientIds || []).includes(user.id) && !(a.readBy || []).includes(user.id)).length
                 : 0} />
-            <div className="flex-fill overflow-auto main-content" style={{ padding: "clamp(12px, 3vw, 16px)", paddingBottom: (role === "employee" || role === "tl" || role === "admin") ? 72 : 16 }}>
+            <div className="flex-fill overflow-auto main-content" style={{ padding: "clamp(12px, 3vw, 16px)" }}>
               <div style={{
                 background: C.white, borderRadius: "clamp(12px, 2vw, 24px)",
                 minHeight: "calc(100vh - clamp(16px, 4vw, 32px))",

@@ -1,8 +1,12 @@
+/* Root fill — the app manages its own internal layout */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-align: left;
+  overflow-x: hidden;
 }
 
 .logo {
